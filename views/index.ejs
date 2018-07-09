@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Home Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+        crossorigin="anonymous">
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+
+        const socket = io();
+
+
+        $('document').ready(function () {
+
+            var name = '';
+
+            // check if name already exists if not popup a message box
+            while (!name) {
+                name = prompt('Please insert your name:', 'placeholder: your name');
+                // console.log(name);
+            }
+
+            socket.emit('new_user', { name: name });
+
+            socket.on('update_user_list', function (data) {
+                console.log('update data - invoked by server, user_list ' + data);
+                $('#userlist').text('');
+                for (var i = 0; i < data.user_list.length; i++) {
+                    $('#userlist').append("<p> ${(data.user_list[i]['name']})</p>")
+                }
+            })
+
+            $('#new_message').submit(function(){
+                var msg = $('#message').val() //message is the id input from the field message
+                console.log(message);
+                socket.emit('new_message', { msg : msg })
+                return false;
+            })
+
+            socket.on('receive_message', function(data){
+                $('#messages').append(`<p> ${data.user_name} : ${data.msg} </p>`)
+            })
+
+            socket.on('message_history', function(data){
+                for (var i = 0; i < data.message_list.length; i++) {
+                    $('#message').prepend("<p> ${(data.message_list[i].user_name} : ${data.message_list[i].msg})</p>")
+                }
+            })
+        })
+
+    </script>
+
+</head>
+
+<body>
+
+    <h1>Conversation Board</h1>
+
+        <form id="new_message">
+            <input type="text" id="message">
+            <button type="submit" class="btn btn-light">Send</button>
+        </form>
+    </div>
+
+    <div id='messages'></div>
+    <div id='userlist'></div>
+
+
+
+</body>
+
+</html>
